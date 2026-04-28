@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Before / After</title>
+
+<style>
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: #000;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  max-width: 1000px;
+  margin: auto;
+  overflow: hidden;
+  line-height: 0;
+}
+
+.base-image,
+.before-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  user-select: none;
+  pointer-events: none;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  width: 50%;
+  overflow: hidden;
+}
+
+.before-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--container-width);
+  max-width: none;
+}
+
+.slider-hitarea {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 40px;
+  height: 100%;
+  transform: translateX(-50%);
+  cursor: ew-resize;
+  z-index: 10;
+}
+
+.slider {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  width: 4px;
+  height: 100%;
+  background: linear-gradient(
+    to right,
+    #fdb515 0%,
+    #ec008c 100%
+  );
+  transform: translateX(-2px);
+  pointer-events: none;
+}
+
+.handle {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 32px;
+  height: 32px;
+  background: linear-gradient(135deg, #fdb515 0%, #ec008c 100%);
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.handle::after {
+  content: "⇆";
+  color: white;
+  font-size: 12px;
+  font-weight: bold;
+  line-height: 1;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="container" id="container">
+  <img class="base-image" src="slider-HOME_B.jpg" alt="after">
+
+  <div class="overlay" id="overlay">
+    <img class="before-image" src="slider-HOME_A.jpg" alt="before">
+  </div>
+
+  <div class="slider-hitarea" id="sliderHitarea">
+    <div class="slider" id="slider"></div>
+    <div class="handle" id="handle"></div>
+  </div>
+</div>
+
+<script>
+const container = document.getElementById("container");
+const overlay = document.getElementById("overlay");
+const sliderHitarea = document.getElementById("sliderHitarea");
+
+let dragging = false;
+
+function setContainerWidth() {
+  const width = container.getBoundingClientRect().width;
+  container.style.setProperty("--container-width", width + "px");
+}
+
+function update(x) {
+  const rect = container.getBoundingClientRect();
+  let pos = x - rect.left;
+  pos = Math.max(0, Math.min(pos, rect.width));
+  const percent = (pos / rect.width) * 100;
+
+  overlay.style.width = percent + "%";
+  sliderHitarea.style.left = percent + "%";
+}
+
+sliderHitarea.addEventListener("mousedown", (e) => {
+  dragging = true;
+  update(e.clientX);
+});
+
+window.addEventListener("mouseup", () => dragging = false);
+
+window.addEventListener("mousemove", (e) => {
+  if (!dragging) return;
+  update(e.clientX);
+});
+
+sliderHitarea.addEventListener("touchstart", (e) => {
+  dragging = true;
+  update(e.touches[0].clientX);
+}, { passive: true });
+
+window.addEventListener("touchend", () => dragging = false);
+
+window.addEventListener("touchmove", (e) => {
+  if (!dragging) return;
+  update(e.touches[0].clientX);
+}, { passive: true });
+
+setContainerWidth();
+window.addEventListener("resize", setContainerWidth);
+</script>
+
+</body>
+</html>
