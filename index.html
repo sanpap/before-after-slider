@@ -6,6 +6,10 @@
 <title>Before / After</title>
 
 <style>
+* {
+  box-sizing: border-box;
+}
+
 body {
   margin: 0;
   background: #000;
@@ -17,9 +21,11 @@ body {
   max-width: 1000px;
   margin: auto;
   overflow: hidden;
+  line-height: 0;
 }
 
-img {
+.base-image,
+.before-image {
   display: block;
   width: 100%;
   height: auto;
@@ -29,10 +35,17 @@ img {
 
 .overlay {
   position: absolute;
-  top: 0;
-  left: 0;
+  inset: 0;
   width: 50%;
   overflow: hidden;
+}
+
+.before-image {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: var(--container-width);
+  max-width: none;
 }
 
 .slider {
@@ -42,6 +55,7 @@ img {
   width: 2px;
   height: 100%;
   background: white;
+  transform: translateX(-1px);
 }
 
 .handle {
@@ -59,6 +73,8 @@ img {
   justify-content: center;
   font-size: 12px;
   font-weight: bold;
+  line-height: 1;
+  user-select: none;
 }
 
 .handle::after {
@@ -71,10 +87,10 @@ img {
 <body>
 
 <div class="container" id="container">
-  <img src="slider-HOME_B.jpg" alt="after">
+  <img class="base-image" src="slider-HOME_B.jpg" alt="after">
 
   <div class="overlay" id="overlay">
-    <img src="slider-HOME_A.jpg" alt="before">
+    <img class="before-image" src="slider-HOME_A.jpg" alt="before">
   </div>
 
   <div class="slider" id="slider"></div>
@@ -89,6 +105,11 @@ const handle = document.getElementById("handle");
 
 let dragging = false;
 
+function setContainerWidth() {
+  const width = container.getBoundingClientRect().width;
+  container.style.setProperty("--container-width", width + "px");
+}
+
 function update(x) {
   const rect = container.getBoundingClientRect();
   let pos = x - rect.left;
@@ -102,6 +123,7 @@ function update(x) {
 
 function startDrag(e) {
   dragging = true;
+  if (e.touches) update(e.touches[0].clientX);
 }
 
 function stopDrag() {
@@ -117,13 +139,18 @@ function onMove(e) {
   }
 }
 
+setContainerWidth();
+window.addEventListener("resize", setContainerWidth);
+
 handle.addEventListener("mousedown", startDrag);
+slider.addEventListener("mousedown", startDrag);
 window.addEventListener("mouseup", stopDrag);
 window.addEventListener("mousemove", onMove);
 
-handle.addEventListener("touchstart", startDrag);
+handle.addEventListener("touchstart", startDrag, { passive: true });
+slider.addEventListener("touchstart", startDrag, { passive: true });
 window.addEventListener("touchend", stopDrag);
-window.addEventListener("touchmove", onMove);
+window.addEventListener("touchmove", onMove, { passive: true });
 </script>
 
 </body>
